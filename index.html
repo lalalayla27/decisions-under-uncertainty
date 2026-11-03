@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decisions Under Uncertainty: Stochastic Control & Reinforcement Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf8f4; --card:#ffffff; --ink:#2b2633; --muted:#6b6475; --line:#ece5ee;
+  --mint:#d4f1e4; --mint-d:#2f8f6b; --lav:#e8e0f8; --lav-d:#6b55b5;
+  --pink:#fbdde8; --pink-d:#c2457a; --peach:#fde6d4; --peach-d:#c26a2b;
+  --blue:#dde9fa; --blue-d:#3a6fb0; --wall:#3b3546;
+  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.5}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:10px 22px;background:rgba(251,248,244,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.brand{font-family:var(--serif);font-weight:700;font-size:17px;white-space:nowrap}
+nav{display:flex;gap:6px;flex-wrap:wrap;flex:1;justify-content:center}
+nav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;border:1px solid transparent}
+nav a:hover{background:#fff;border-color:var(--line)}
+nav a.on{background:var(--ink);color:#fff}
+.hbtn{font:500 12px var(--sans);background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--ink)}
+.hbtn.on{background:var(--lav);border-color:var(--lav-d)}
+main{max-width:1320px;margin:0 auto;padding:22px 26px 90px}
+section.view{display:none;animation:fade .35s ease}
+section.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,58px);line-height:1.05;margin:.2em 0 .25em;letter-spacing:-.01em}
+h2{font-family:var(--serif);font-size:clamp(26px,2.8vw,36px);margin:0 0 .25em;line-height:1.1}
+h3{font-family:var(--serif);font-size:18px;margin:0 0 .35em}
+.kicker{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--lav-d)}
+.lede{font-size:17px;color:var(--ink);max-width:62ch;margin:.2em 0 1em}
+.lede b{background:linear-gradient(transparent 60%,var(--peach) 60%)}
+.muted{color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:26px;align-items:start}
+@media (max-width:980px){.two{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card.mint{border-left:4px solid var(--mint-d)} .card.lav{border-left:4px solid var(--lav-d)}
+.card.pink{border-left:4px solid var(--pink-d)} .card.peach{border-left:4px solid var(--peach-d)} .card.blue{border-left:4px solid var(--blue-d)}
+.chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.chip{border-radius:10px;padding:8px 10px;font-size:13.5px;line-height:1.35}
+.chip b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.c-mint{background:var(--mint)} .c-lav{background:var(--lav)} .c-pink{background:var(--pink)} .c-peach{background:var(--peach)} .c-blue{background:var(--blue)}
+.eq{font-family:var(--serif);font-size:20px;text-align:center;padding:12px 8px;margin:8px 0;background:#fdfbff;border:1px dashed #d8cdef;border-radius:10px;overflow-x:auto;white-space:nowrap}
+.eq i{font-style:italic}
+.eq .model{background:var(--lav);border-radius:6px;padding:0 4px;color:var(--lav-d)}
+.eq .sample{background:var(--peach);border-radius:6px;padding:0 4px;color:var(--peach-d)}
+.eq .td{border-bottom:2px solid var(--pink-d)}
+.small{font-size:13px} .tiny{font-size:12px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+/* demo panel */
+.demo{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(60,40,90,.06)}
+.demo-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.demo-title h3{margin:0}
+.badge{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+.sliders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 10px}
+.sl label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.sl label output{font-family:var(--mono);color:var(--ink);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--lav-d)}
+canvas.grid{width:100%;aspect-ratio:8/5;display:block;border-radius:10px;cursor:pointer;touch-action:manipulation}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+button.b{font:600 13px var(--sans);border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.15s}
+button.b:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06)}
+button.b.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+button.b.lav{background:var(--lav);border-color:#cfc2ef} button.b.peach{background:var(--peach);border-color:#f2cdb0}
+.status{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-left:auto}
+.check{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+.mc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.bar-row{display:grid;grid-template-columns:170px 1fr 92px;gap:10px;align-items:center;margin:6px 0;font-size:12.5px}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#f3eff5}
+.bar span{display:flex;align-items:center;justify-content:center;font:600 11px var(--mono);color:#2b2633;transition:width .5s}
+.seg-g{background:#a8e6c9}.seg-p{background:#f4b3c8}.seg-n{background:#ddd6e2}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0}
+.stat{background:var(--bg);border-radius:10px;padding:7px 9px}
+.stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stat .v{font:600 18px var(--mono)}
+canvas.chart{width:100%;height:190px;display:block;margin-top:8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+table.cmp th,table.cmp td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.cmp th{font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+table.cmp th:nth-child(2){background:var(--lav)} table.cmp th:nth-child(3){background:var(--peach)}
+table.cmp td:first-child{color:var(--muted);font-weight:500;width:26%}
+/* intro */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:34px;align-items:center;min-height:62vh}
+@media (max-width:980px){.hero{grid-template-columns:1fr}}
+.parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.part{border-radius:14px;padding:14px;cursor:pointer;transition:.2s;border:1px solid transparent}
+.part:hover{transform:translateY(-3px);border-color:rgba(0,0,0,.06)}
+.part .n{font:700 28px var(--serif);opacity:.55}
+.part h4{margin:2px 0 4px;font:700 16px var(--serif)}
+.part p{margin:0;font-size:13px}
+.kbd{font:600 11px var(--mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:#fff}
+/* code */
+.codes{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:980px){.codes{grid-template-columns:1fr}}
+.codebox{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.codebox .hd{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font:600 13px var(--sans)}
+pre.code{margin:0;padding:10px 0;font:12.5px/1.6 var(--mono);overflow-x:auto;background:#fdfcfe}
+pre.code .ln{display:block;padding:0 14px}
+pre.code .ln.hl-m{background:var(--lav)} pre.code .ln.hl-s{background:var(--peach)}
+.kw{color:#8a3ffc}.cm{color:#9a90a6;font-style:italic}.nu{color:#c2457a}.st{color:#2f8f6b}.fn{color:#3a6fb0}
+.pipeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 18px}
+@media (max-width:900px){.pipeline{grid-template-columns:1fr 1fr}}
+.step{border-radius:12px;padding:12px;position:relative}
+.step .n{font:700 12px var(--sans);letter-spacing:.1em;opacity:.7}
+.step h4{margin:3px 0 4px;font:700 15px var(--serif)}
+.step p{margin:0;font-size:13px}
+.py{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:16px}
+@media (max-width:980px){.py{grid-template-columns:1fr}}
+textarea.pycode{width:100%;height:330px;font:12px/1.55 var(--mono);border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fdfcfe;color:var(--ink);resize:vertical;tab-size:4}
+pre.out{margin:0;height:330px;overflow:auto;font:13px/1.45 var(--mono);background:#2b2633;color:#f3eef8;border-radius:12px;padding:12px;white-space:pre-wrap}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.tool{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.tool b{font-family:var(--mono);font-size:13px}
+/* wrap */
+.takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+@media (max-width:900px){.takeaways{grid-template-columns:1fr}}
+.take{border-radius:16px;padding:18px}
+.take .n{font:700 40px var(--serif);opacity:.35;line-height:1}
+.take h4{font:700 19px var(--serif);margin:6px 0}
+.take p{margin:0;font-size:14px}
+.refs{font-size:13.5px;columns:2;column-gap:28px}
+@media (max-width:900px){.refs{columns:1}}
+.refs li{margin-bottom:6px;break-inside:avoid}
+/* notes + footer */
+aside.notes{display:none;margin-top:16px;background:#fffbe9;border:1px dashed #e6cf7a;border-radius:12px;padding:10px 14px;font-size:13.5px}
+aside.notes::before{content:"Speaker notes";display:block;font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#a8862a;margin-bottom:4px}
+aside.notes ul{margin:0;padding-left:18px}
+body.notes-on aside.notes{display:block}
+footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;padding:9px;background:rgba(251,248,244,.94);border-top:1px solid var(--line);z-index:10}
+footer .pg{font:500 12px var(--mono);color:var(--muted);min-width:60px;text-align:center}
+svg text{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Decisions under uncertainty</div>
+  <nav id="nav">
+    <a href="#intro" data-v="intro">Intro</a>
+    <a href="#control" data-v="control">1 · Stochastic control</a>
+    <a href="#rl" data-v="rl">2 · Reinforcement learning</a>
+    <a href="#code" data-v="code">3 · On a computer</a>
+    <a href="#wrap" data-v="wrap">Wrap-up</a>
+  </nav>
+  <button class="hbtn" id="notesBtn" title="Toggle speaker notes (N)">Notes</button>
+  <button class="hbtn" id="fsBtn" title="Fullscreen (F)">⛶</button>
+</header>
+
+<main>
+<!-- ================= INTRO ================= -->
+<section class="view" id="v-intro">
+  <div class="hero">
+    <div>
+      <div class="kicker">An interactive three-part talk</div>
+      <h1>Making good decisions when the world is random</h1>
+      <p class="lede">Stochastic optimal control, reinforcement learning, and how to build both on a computer, all told through <b>one slippery robot</b>.</p>
+      <p class="muted small">Presented by Lay Pyae Phoe Pyi Sone</p>
+      <div class="parts">
+        <div class="part c-lav" data-go="control"><div class="n">01</div><h4>Stochastic control</h4><p>You <b>know</b> the odds, so you <b>compute</b> the best policy.</p></div>
+        <div class="part c-peach" data-go="rl"><div class="n">02</div><h4>Reinforcement learning</h4><p>You <b>don't</b> know the odds, so you <b>learn</b> the policy from experience.</p></div>
+        <div class="part c-mint" data-go="code"><div class="n">03</div><h4>On a computer</h4><p>Both in about 15 lines of Python, side by side and running live.</p></div>
+      </div>
+      <p class="tiny" style="margin-top:16px">Navigate with <span class="kbd">←</span> <span class="kbd">→</span> · <span class="kbd">N</span> speaker notes · <span class="kbd">F</span> fullscreen</p>
+    </div>
+    <div>
+      <div class="demo">
+        <div class="demo-title"><h3>Meet the robot</h3><span class="badge c-mint">live</span></div>
+        <canvas class="grid" id="introCanvas"></canvas>
+        <p class="hint">It wants the <b>★ goal</b> (+10) and must avoid the <b>cliff</b> (−10). Each move costs a little, and the floor is slippery: sometimes it slides sideways. What's the best way to move?</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><ul>
+    <li>Hook: "Every business decision is a sequence of choices made while the future is uncertain, like inventory, pricing, or investing. Today: the math of doing that optimally, and the AI that learns to do it."</li>
+    <li>Same example all talk: a robot on a slippery floor. Point out the goal, the cliff, and that it sometimes slides sideways.</li>
+    <li>Preview the arc: Part 1 assumes we know the odds. Part 2 removes that assumption. Part 3 shows the code.</li>
+  </ul></aside>
+</section>
+
+<!-- ================= STOCHASTIC CONTROL ================= -->
+<section class="view" id="v-control">
+  <div class="two">
+    <div>
+      <div class="kicker">Part 1</div>
+      <h2>Stochastic optimal control</h2>
+      <p class="lede">Choosing actions over time, <b>based on what you observe</b>, to optimize an <b>expected</b> objective when the system evolves randomly.</p>
+      <div class="chips">
+        <div class="chip c-blue"><b>State x<sub>t</sub></b>Where the robot is now</div>
+        <div class="chip c-mint"><b>Control u<sub>t</sub></b>Move ↑ → ↓ ←</div>
+        <div class="chip c-pink"><b>Noise w<sub>t</sub></b>With probability <i>p</i> it slides sideways</div>
+        <div class="chip c-peach"><b>Objective</b>Maximize E[Σ γ<sup>t</sup> r<sub>t</sub>]: reward now beats reward later</div>
+      </div>
+      <div class="eq"><i>x</i><sub>t+1</sub> = <i>f</i>(<i>x</i><sub>t</sub>, <i>u</i><sub>t</sub>, <i>w</i><sub>t</sub>)</div>
+      <div class="card peach">
+        <h3>Idea 1: the answer is a policy, not a plan</h3>
+        <p class="small" style="margin:0">A fixed route ignores where the randomness actually took you. A <b>feedback policy</b> <i>u</i> = π(<i>x</i>) re-decides at every step. <span class="muted">Test it: “Release 1,000 robots” →</span></p>
+      </div>
+      <div class="card lav">
+        <h3>Idea 2: Bellman's principle of optimality (1957)</h3>
+        <p class="small" style="margin:0 0 4px">Whatever happens first, the remaining decisions must be optimal from wherever you land. That gives a recursive equation for the best achievable value <i>V</i>*:</p>
+        <div class="eq"><i>V</i>*(<i>s</i>) = max<sub><i>a</i></sub> <span class="model">Σ<sub><i>s′</i></sub> <i>P</i>(<i>s′</i> | <i>s</i>, <i>a</i>)</span> [ <i>r</i> + γ <i>V</i>*(<i>s′</i>) ]</div>
+        <p class="small" style="margin:0">The <span class="eq-inline" style="background:var(--lav);padding:0 4px;border-radius:4px;color:var(--lav-d)">lavender part is the model</span>: the known probabilities. <b>Dynamic programming</b> solves it by applying this update to every state until the values stop changing (<i>value iteration</i>).</p>
+      </div>
+      <div class="small muted" style="margin-top:4px">Beyond the grid:</div>
+      <div class="tags">
+        <span class="tag">LQG control: Kalman filter + LQR (the Kalman filter flew on Apollo)</span>
+        <span class="tag">Merton (1969): investing & consuming under random returns</span>
+        <span class="tag">Inventory: order-up-to policies under random demand</span>
+        <span class="tag">Revenue management & dynamic pricing</span>
+        <span class="tag">Continuous time: Hamilton–Jacobi–Bellman PDE</span>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-title"><h3>Value iteration, live</h3><span class="badge c-lav">model known</span></div>
+      <div class="sliders world-sliders"></div>
+      <canvas class="grid" id="dpCanvas"></canvas>
+      <div class="row">
+        <button class="b" id="dpStep">1 sweep</button>
+        <button class="b lav" id="dpAnim">▶ Animate sweeps</button>
+        <button class="b pri" id="dpSolve">Solve</button>
+        <button class="b" id="dpReset">Reset values</button>
+        <span class="status" id="dpStatus">sweep 0</span>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="dpShowV" checked> values</label>
+        <label class="check"><input type="checkbox" id="dpShowA" checked> policy arrows</label>
+        <button class="b" id="worldReset" style="margin-left:auto;padding:4px 10px;font-size:12px">Reset world</button>
+      </div>
+      <p class="hint">Watch value spread outward from the goal one sweep at a time. <b>After solving, drag slip <i>p</i> up:</b> the optimal route steps away from the cliff. Click any cell to cycle wall → cliff → empty.</p>
+      <div class="mc">
+        <div class="row" style="margin-top:0"><b class="small">Plan vs. policy</b><button class="b peach" id="mcRun" style="margin-left:auto">Release 1,000 robots</button><label class="check"><input type="checkbox" id="mcPaths" checked> show paths</label></div>
+        <div class="bar-row"><span><b style="color:var(--peach-d)">Open-loop plan</b><br><span class="tiny">fixed route planned as if no slips</span></span><div class="bar" id="barOpen"><span class="seg-n" style="width:100%">not run yet</span></div><span class="tiny" id="retOpen"></span></div>
+        <div class="bar-row"><span><b style="color:var(--lav-d)">Closed-loop policy π*(x)</b><br><span class="tiny">re-decides every step</span></span><div class="bar" id="barClosed"><span class="seg-n" style="width:100%">not run yet</span></div><span class="tiny" id="retClosed"></span></div>
+        <div class="legend"><span><i style="background:#a8e6c9;height:8px"></i>reached goal</span><span><i style="background:#f4b3c8;height:8px"></i>fell off cliff</span><span><i style="background:#ddd6e2;height:8px"></i>neither (lost)</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><ul>
+    <li>Define it in one breath: decisions over time, feedback on what you observe, optimize an expectation, randomness in the dynamics.</li>
+    <li>Demo 1: press "Animate sweeps." Value spreads backward from the goal, which is Bellman's recursion made visible. Then Solve.</li>
+    <li>Demo 2: drag slip from 0 to about 0.3. At 0 the robot hugs the cliff (shortest path). As slip grows it pays a longer route to stay safe. <b>Risk changes the optimal decision</b>, which is the whole point of the "stochastic" part.</li>
+    <li>Demo 3: Release 1,000 robots. The fixed plan falls off far more often. That's why the output is a <i>policy</i>.</li>
+    <li>Fun "what if": at slip 0.3 the robot at START chooses ← (into the wall). Moving ↑ risks sliding right into the cliff; pushing against the wall is safe and lets it wait for a lucky slide upward. Optimal under risk, not intuitive.</li>
+    <li>Finance tie-in: Merton's portfolio problem is this same idea in continuous time.</li>
+  </ul></aside>
+</section>
+
+<!-- ================= RL ================= -->
+<section class="view" id="v-rl">
+  <div class="two">
+    <div>
+      <div class="kicker">Part 2</div>
+      <h2>Reinforcement learning</h2>
+      <p class="lede">Learning a good policy by <b>trial and error from rewards</b>, without being told the transition probabilities.</p>
+      <svg viewBox="0 0 460 150" width="100%" style="max-width:460px;display:block;margin:0 auto 6px" aria-label="Agent-environment loop">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6475"/></marker></defs>
+        <rect x="20" y="45" width="130" height="60" rx="14" fill="#fde6d4" stroke="#c26a2b"/>
+        <text x="85" y="72" text-anchor="middle" font-weight="600" font-size="15">Agent</text>
+        <text x="85" y="91" text-anchor="middle" font-size="12" fill="#6b6475">policy π, values Q</text>
+        <rect x="310" y="45" width="130" height="60" rx="14" fill="#e8e0f8" stroke="#6b55b5"/>
+        <text x="375" y="72" text-anchor="middle" font-weight="600" font-size="15">Environment</text>
+        <text x="375" y="91" text-anchor="middle" font-size="12" fill="#6b6475">unknown P, rewards</text>
+        <path d="M150,58 C220,10 240,10 308,58" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
+        <text x="230" y="24" text-anchor="middle" font-size="13">action <tspan font-style="italic">a</tspan>ₜ</text>
+        <path d="M310,95 C240,140 220,140 152,95" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
+        <text x="230" y="143" text-anchor="middle" font-size="13">next state <tspan font-style="italic">s</tspan>ₜ₊₁ , reward <tspan font-style="italic">r</tspan>ₜ₊₁</text>
+      </svg>
+      <div class="card peach">
+        <h3>Same Bellman equation, minus the model</h3>
+        <p class="small" style="margin:0 0 4px">Replace the <span style="background:var(--lav);padding:0 4px;border-radius:4px;color:var(--lav-d)">average over <i>P</i></span> with <span style="background:var(--peach);padding:0 4px;border-radius:4px;color:var(--peach-d)">one experienced transition</span> (<i>s, a, r, s′</i>) and nudge toward it. This is <b>Q-learning</b> (Watkins, 1989):</p>
+        <div class="eq" style="font-size:18px"><i>Q</i>(<i>s,a</i>) ← <i>Q</i>(<i>s,a</i>) + α [ <span class="td"><span class="sample"><i>r</i> + γ max<sub><i>a′</i></sub> <i>Q</i>(<i>s′,a′</i>)</span> − <i>Q</i>(<i>s,a</i>)</span> ]</div>
+        <p class="tiny" style="margin:0">The underlined term is the <b>temporal-difference error</b>: how surprised the agent was. It converges to the optimal <i>Q</i>* if every action keeps being tried and α shrinks over time (here α = α₀·30/(30 + visits), which you can switch off).</p>
+      </div>
+      <div class="card pink">
+        <h3>Explore vs. exploit</h3>
+        <p class="small" style="margin:0"><b>ε-greedy:</b> with probability ε try a random action; otherwise take the best one known so far. With no exploration, the agent never learns that a better route exists.</p>
+      </div>
+      <table class="cmp">
+        <tr><th></th><th>Stochastic control</th><th>Reinforcement learning</th></tr>
+        <tr><td>What you have</td><td>The model <i>P</i>, <i>r</i></td><td>Experience or a simulator</td></tr>
+        <tr><td>How you solve</td><td><b>Plan</b>: dynamic programming</td><td><b>Learn</b>: sample-based updates</td></tr>
+        <tr><td>Bottleneck</td><td>Computation (curse of dimensionality)</td><td>Data & exploration</td></tr>
+        <tr><td>Language</td><td>cost, <i>x</i>, <i>u</i>, minimize <i>J</i></td><td>reward, <i>s</i>, <i>a</i>, maximize <i>V</i></td></tr>
+      </table>
+      <p class="tiny" style="margin-top:6px">Same problem, two research communities (Bertsekas). Scaled up with neural networks: DQN on Atari (2015), AlphaGo (2016), RLHF for chat assistants.</p>
+    </div>
+
+    <div class="demo">
+      <div class="demo-title"><h3>Q-learning, live</h3><span class="badge c-peach">model unknown</span></div>
+      <div class="sliders world-sliders"></div>
+      <div class="sliders">
+        <div class="sl"><label>learning rate α₀ <output id="oAlpha">0.50</output></label><input type="range" id="alpha" min="0.02" max="1" step="0.02" value="0.5"></div>
+        <div class="sl"><label>exploration ε <output id="oEps">0.10</output></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1"></div>
+        <div class="sl"><label>animation speed <output id="oSpeed">fast</output></label><input type="range" id="speed" min="1" max="10" step="1" value="8"></div>
+      </div>
+      <canvas class="grid" id="rlCanvas"></canvas>
+      <div class="row">
+        <button class="b pri" id="rlPlay">▶ Watch it learn</button>
+        <button class="b peach" id="rlFast">⏩ +500 episodes</button>
+        <button class="b" id="rlReset">Reset agent</button>
+        <label class="check"><input type="checkbox" id="rlShowV" checked> values</label>
+        <label class="check" title="α = α₀·30/(30 + visits of (s,a))"><input type="checkbox" id="rlDecay" checked> decay α</label>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">episodes</div><div class="v" id="sEp">0</div></div>
+        <div class="stat"><div class="k">optimal actions</div><div class="v" id="sAgree">0%</div></div>
+        <div class="stat"><div class="k">learned V(start)</div><div class="v" id="sVpi">–</div></div>
+        <div class="stat"><div class="k">optimal V*(start)</div><div class="v" id="sVstar">–</div></div>
+      </div>
+      <canvas class="chart" id="chart"></canvas>
+      <div class="legend">
+        <span><i style="background:#f2c7a8;height:6px;width:6px;border-radius:50%"></i>return of each episode</span>
+        <span><i style="background:#c26a2b"></i>moving average</span>
+        <span><i style="background:#6b55b5"></i>value of learned greedy policy</span>
+        <span><i style="background:repeating-linear-gradient(90deg,#2f8f6b 0 5px,transparent 5px 8px)"></i>DP optimum (Part 1)</span>
+      </div>
+      <p class="hint">The agent never sees <i>P</i>; it only experiences slips. <span style="color:#d9822b">●</span> marks states where its current action isn't optimal yet. The purple line climbing to the green dashed line is the agent <b>rediscovering Part 1's answer</b>.</p>
+    </div>
+  </div>
+  <aside class="notes"><ul>
+    <li>Key sentence: "RL is stochastic control when you <i>don't</i> have the model. You only get to try things and see what happens."</li>
+    <li>Point to the equations: Q-learning is the Bellman equation with the lavender expectation replaced by one sample (the peach part).</li>
+    <li>Demo: press Watch it learn. Early on it wanders and falls off the cliff. Then press +500 episodes. The purple line (true value of what it learned) converges to the green dashed DP optimum.</li>
+    <li>Uncheck "decay α" and reset: with a constant step size the purple line keeps jumping between the safe and risky routes, because slips make every sample noisy. Shrinking α is what the convergence theorem requires.</li>
+    <li>Try ε = 0: learning stalls. That's the exploration problem. Behavior returns (dots) stay below the optimum because the agent keeps exploring, which is the price of learning.</li>
+    <li>Business tie-in: when you can simulate customers or demand but can't write down P, use RL. Powell calls this sequential decision analytics.</li>
+  </ul></aside>
+</section>
+
+<!-- ================= CODE ================= -->
+<section class="view" id="v-code">
+  <div class="kicker">Part 3</div>
+  <h2>Implementing them on a computer</h2>
+  <p class="lede">Every implementation follows the same pipeline. The choice between planning and learning comes down to <b>what you know about the randomness</b>.</p>
+  <div class="pipeline">
+    <div class="step c-blue"><div class="n">STEP 1</div><h4>Model it as an MDP</h4><p>States, actions, rewards, discount γ. Usually the hardest and most important step.</p></div>
+    <div class="step c-lav"><div class="n">STEP 2a</div><h4>Know <i>P</i> and it's small?</h4><p>Dynamic programming: value or policy iteration. Exact answer.</p></div>
+    <div class="step c-peach"><div class="n">STEP 2b</div><h4>Only a simulator or data?</h4><p>RL: Q-learning (tables) or DQN/PPO (neural nets) when there are too many states for a table.</p></div>
+    <div class="step c-mint"><div class="n">STEP 3</div><h4>Evaluate vs. a baseline</h4><p>Monte Carlo rollouts against a simple rule, exactly like the 1,000 robots.</p></div>
+  </div>
+  <div class="codes">
+    <div class="codebox"><div class="hd c-lav"><span>Stochastic control: value iteration</span><span class="tiny">uses the model</span></div><pre class="code" id="codeVI"></pre></div>
+    <div class="codebox"><div class="hd c-peach"><span>Reinforcement learning: Q-learning</span><span class="tiny">uses samples only</span></div><pre class="code" id="codeQL"></pre></div>
+  </div>
+  <p class="small muted" style="margin-top:8px">The highlighted lines are the only real difference: one <b style="color:var(--lav-d)">averages over every possible next state using <i>P</i></b>; the other <b style="color:var(--peach-d)">uses the one next state that actually happened</b>.</p>
+
+  <div class="py">
+    <div>
+      <div class="row" style="margin:0 0 6px"><b>Run real Python in your browser</b><span class="tiny">Edit SLIP or GAMMA, then run it</span><button class="b pri" id="pyRun" style="margin-left:auto">▶ Run Python</button></div>
+      <textarea class="pycode" id="pyCode" spellcheck="false"></textarea>
+    </div>
+    <div>
+      <div class="row" style="margin:0 0 6px"><b>Output</b><span class="tiny" id="pyState">Python loads on first run (~5–10 s)</span></div>
+      <pre class="out" id="pyOut">Press ▶ Run Python.
+
+Try SLIP = 0.0 and then SLIP = 0.3:
+the optimal route moves away from the cliff (X).</pre>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="tool"><b>NumPy</b><br>Arrays for <i>V</i>, <i>Q</i>, and <i>P</i>; everything on this page in tabular form.</div>
+    <div class="tool"><b>Gymnasium</b><br>Standard environments with <code>reset()</code> / <code>step()</code>, the interface the Q-learning code assumes.</div>
+    <div class="tool"><b>Stable-Baselines3 + PyTorch</b><br>Ready-made deep RL (DQN, PPO) for problems too large for a table.</div>
+    <div class="tool"><b>python-control / SciPy</b><br>Classical control: LQR via the Riccati equation, Kalman filters.</div>
+    <div class="tool"><b>Jupyter / Google Colab</b><br>The companion notebook runs top to bottom, with an inventory-control example.</div>
+    <div class="tool"><b>GitHub</b><br>Put the notebook in a public repo with a README and an “Open in Colab” link so anyone can rerun it.</div>
+  </div>
+  <aside class="notes"><ul>
+    <li>Walk the pipeline: modeling is the hard part; the algorithm choice follows from what you know.</li>
+    <li>Point at the highlighted lines: this is the same Bellman update. One line differs, and that line is the whole difference between Part 1 and Part 2.</li>
+    <li>Live moment: set SLIP = 0.3 in the Python box and run. Same answer as the interactive grid, computed by 30 lines of plain Python.</li>
+    <li>Mention scale: tables work for thousands of states. For millions (chess, real supply chains), you swap the table for a neural network. That's deep RL.</li>
+  </ul></aside>
+</section>
+
+<!-- ================= WRAP ================= -->
+<section class="view" id="v-wrap">
+  <div class="kicker">Wrap-up</div>
+  <h2>Three things to remember</h2>
+  <div class="takeaways">
+    <div class="take c-lav"><div class="n">1</div><h4>Stochastic control computes</h4><p>When you know how the randomness behaves, the Bellman equation gives the optimal <b>feedback policy</b>, and risk can change what's optimal.</p></div>
+    <div class="take c-peach"><div class="n">2</div><h4>RL learns</h4><p>Same goal, same equation, but it learns from <b>sampled experience</b> when the model is unknown or too big to write down.</p></div>
+    <div class="take c-mint"><div class="n">3</div><h4>Pick by what you know</h4><p>Small and known: DP. Simulator or data only: RL. Huge: approximate with neural networks. Always evaluate against a baseline.</p></div>
+  </div>
+  <div class="two" style="grid-template-columns:1.3fr .7fr">
+    <div class="card">
+      <h3>References</h3>
+      <ul class="refs">
+        <li>Bellman, R. (1957). <i>Dynamic Programming.</i> Princeton University Press.</li>
+        <li>Sutton, R. & Barto, A. (2018). <i>Reinforcement Learning: An Introduction</i> (2nd ed.). MIT Press. Free online.</li>
+        <li>Bertsekas, D. (2019). <i>Reinforcement Learning and Optimal Control.</i> Athena Scientific.</li>
+        <li>Watkins, C. (1989). <i>Learning from Delayed Rewards.</i> PhD thesis, Cambridge.</li>
+        <li>Merton, R. (1969). Lifetime portfolio selection under uncertainty. <i>Review of Economics and Statistics.</i></li>
+        <li>Powell, W. (2022). <i>Reinforcement Learning and Stochastic Optimization.</i> Wiley.</li>
+        <li>Mnih, V. et al. (2015). Human-level control through deep RL. <i>Nature.</i></li>
+      </ul>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:var(--pink)">
+      <div style="font:700 44px var(--serif)">Questions?</div>
+      <p class="small" style="margin:6px 0 0">Every demo here is live, so ask a “what if” and we can try it.</p>
+    </div>
+  </div>
+  <aside class="notes"><ul>
+    <li>Recap in three sentences, then invite "what if" questions and answer them live on the demos (change slip, add walls, set ε = 0).</li>
+  </ul></aside>
+</section>
+</main>
+
+<footer>
+  <button class="b" id="prev">← Prev</button>
+  <span class="pg" id="pg">1 / 5</span>
+  <button class="b pri" id="next">Next →</button>
+</footer>
+
+<script>
+(()=>{
+"use strict";
+/* ---------------- world model ---------------- */
+const ROWS=5, COLS=8, N=ROWS*COLS;
+const DR=[-1,0,1,0], DC=[0,1,0,-1];
+const idx=(r,c)=>r*COLS+c, rowOf=s=>Math.floor(s/COLS), colOf=s=>s%COLS;
+const START=idx(4,0), GOAL=idx(4,7);
+const EMPTY=0, WALL=1, PIT=2, GOALT=3;
+const W={slip:0.2,gamma:0.95,step:-0.2,type:new Uint8Array(N)};
+function defaultWorld(){W.type.fill(EMPTY);for(let c=1;c<=6;c++)W.type[idx(4,c)]=PIT;W.type[GOAL]=GOALT;}
+defaultWorld();
+const isTerm=s=>W.type[s]===PIT||W.type[s]===GOALT;
+const isWall=s=>W.type[s]===WALL;
+function moveTo(s,a){const r=rowOf(s)+DR[a],c=colOf(s)+DC[a];if(r<0||r>=ROWS||c<0||c>=COLS)return s;const t=idx(r,c);return isWall(t)?s:t;}
+function trans(s,a,p){const o=[[1-p,moveTo(s,a)]];if(p>0){o.push([p/2,moveTo(s,(a+1)%4)],[p/2,moveTo(s,(a+3)%4)]);}return o;}
+const reward=s2=>W.type[s2]===GOALT?10:W.type[s2]===PIT?-10:W.step;
+function sample(s,a){const p=W.slip,u=Math.random();const d=u<1-p?a:(u<1-p/2?(a+1)%4:(a+3)%4);return moveTo(s,d);}
+function qv(V,s,a,p,g){let t=0;for(const [pr,s2] of trans(s,a,p))t+=pr*(reward(s2)+g*(isTerm(s2)?0:V[s2]));return t;}
+function sweep(V,p,g){const Vn=new Float64Array(N);let d=0;for(let s=0;s<N;s++){if(isTerm(s)||isWall(s))continue;let b=-Infinity;for(let a=0;a<4;a++)b=Math.max(b,qv(V,s,a,p,g));Vn[s]=b;d=Math.max(d,Math.abs(b-V[s]));}return [Vn,d];}
+function solve(p,g){let V=new Float64Array(N),d=1,k=0;while(d>1e-7&&k<3000){[V,d]=sweep(V,p,g);k++;}return {V,k};}
+function greedy(V,p,g){const pi=new Int8Array(N).fill(-1);for(let s=0;s<N;s++){if(isTerm(s)||isWall(s))continue;let b=-Infinity,ba=0;for(let a=0;a<4;a++){const q=qv(V,s,a,p,g);if(q>b+1e-9){b=q;ba=a;}}pi[s]=ba;}return pi;}
+function evalPolicy(pi,p,g){const V=new Float64Array(N);for(let k=0;k<3000;k++){let d=0;for(let s=0;s<N;s++){if(pi[s]<0)continue;const v=qv(V,s,pi[s],p,g);d=Math.max(d,Math.abs(v-V[s]));V[s]=v;}if(d<1e-7)break;}return V;}
+
+/* exact optimum, shared by both demos */
+let STAR={V:null,pi:null};
+function computeStar(){const {V}=solve(W.slip,W.gamma);STAR={V,pi:greedy(V,W.slip,W.gamma)};}
+computeStar();
+
+/* ---------------- drawing ---------------- */
+function lerp(a,b,t){return a+(b-a)*t;}
+function mix(c1,c2,t){return `rgb(${Math.round(lerp(c1[0],c2[0],t))},${Math.round(lerp(c1[1],c2[1],t))},${Math.round(lerp(c1[2],c2[2],t))})`;}
+const CREAM=[252,250,246], MINT=[126,209,172], ROSE=[242,155,184];
+function valColor(v){const t=Math.max(-1,Math.min(1,v/10));return t>=0?mix(CREAM,MINT,Math.pow(t,0.8)):mix(CREAM,ROSE,Math.pow(-t,0.8));}
+function fit(cv){const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return null;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w,h};}
+function arrow(ctx,x,y,a,sz,col){ctx.save();ctx.translate(x,y);ctx.rotate([ -Math.PI/2,0,Math.PI/2,Math.PI][a]);ctx.fillStyle=col;ctx.strokeStyle=col;ctx.lineWidth=Math.max(1.6,sz*0.12);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-sz*0.38,0);ctx.lineTo(sz*0.12,0);ctx.stroke();ctx.beginPath();ctx.moveTo(sz*0.42,0);ctx.lineTo(sz*0.06,-sz*0.24);ctx.lineTo(sz*0.06,sz*0.24);ctx.closePath();ctx.fill();ctx.restore();}
+function drawGrid(cv,o){
+  const f=fit(cv);if(!f)return;const {ctx,w,h}=f;const cw=w/COLS,ch=h/ROWS,sz=Math.min(cw,ch);
+  ctx.clearRect(0,0,w,h);
+  for(let s=0;s<N;s++){
+    const x=colOf(s)*cw,y=rowOf(s)*ch,t=W.type[s];
+    if(t===WALL){ctx.fillStyle='#3b3546';ctx.fillRect(x,y,cw,ch);continue;}
+    if(t===PIT){ctx.fillStyle='#f7c6d6';ctx.fillRect(x,y,cw,ch);ctx.save();ctx.beginPath();ctx.rect(x,y,cw,ch);ctx.clip();ctx.strokeStyle='rgba(194,69,122,.25)';ctx.lineWidth=2;for(let k=-ch;k<cw;k+=9){ctx.beginPath();ctx.moveTo(x+k,y+ch);ctx.lineTo(x+k+ch,y);ctx.stroke();}ctx.restore();ctx.fillStyle='#a8325f';ctx.font=`600 ${Math.round(sz*0.2)}px Inter,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('−10',x+cw/2,y+ch/2);continue;}
+    if(t===GOALT){ctx.fillStyle='#a8e6c9';ctx.fillRect(x,y,cw,ch);ctx.fillStyle='#1f6e50';ctx.font=`700 ${Math.round(sz*0.3)}px Inter,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x+cw/2,y+ch/2-sz*0.08);ctx.font=`600 ${Math.round(sz*0.17)}px Inter,sans-serif`;ctx.fillText('+10',x+cw/2,y+ch/2+sz*0.2);continue;}
+    ctx.fillStyle=(o.values&&o.showV)?valColor(o.values[s]):'#fcfaf6';ctx.fillRect(x,y,cw,ch);
+  }
+  ctx.strokeStyle='rgba(60,50,80,.12)';ctx.lineWidth=1;
+  for(let c=1;c<COLS;c++){ctx.beginPath();ctx.moveTo(c*cw,0);ctx.lineTo(c*cw,h);ctx.stroke();}
+  for(let r=1;r<ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*ch);ctx.lineTo(w,r*ch);ctx.stroke();}
+  ctx.textAlign='left';ctx.textBaseline='top';
+  {const x=colOf(START)*cw,y=rowOf(START)*ch;ctx.fillStyle='#3a6fb0';ctx.font=`700 ${Math.round(sz*0.16)}px Inter,sans-serif`;ctx.fillText('START',x+4,y+3);}
+  for(let s=0;s<N;s++){
+    if(isTerm(s)||isWall(s))continue;const x=colOf(s)*cw,y=rowOf(s)*ch;
+    if(o.values&&o.showV&&o.showNum!==false){ctx.fillStyle='rgba(43,38,51,.62)';ctx.font=`500 ${Math.max(9,Math.round(sz*0.15))}px "JetBrains Mono",monospace`;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(o.values[s].toFixed(1),x+cw-4,y+ch-3);ctx.textAlign='left';ctx.textBaseline='top';}
+    if(o.policy&&o.showA!==false&&o.policy[s]>=0)arrow(ctx,x+cw/2,y+ch/2-sz*0.04,o.policy[s],sz*0.5,'rgba(43,38,51,.78)');
+    if(o.mismatch&&o.mismatch[s]){ctx.fillStyle='#d9822b';ctx.beginPath();ctx.arc(x+8,y+ch-8,4,0,7);ctx.fill();}
+  }
+  if(o.paths){for(const P of o.paths){ctx.strokeStyle=P.col;ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.beginPath();P.s.forEach((s,i)=>{const jx=P.j[0]*cw,jy=P.j[1]*ch;const X=colOf(s)*cw+cw/2+jx,Y=rowOf(s)*ch+ch/2+jy;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();}}
+  if(o.trail&&o.trail.length>1){ctx.strokeStyle='rgba(107,85,181,.35)';ctx.lineWidth=3;ctx.lineJoin='round';ctx.beginPath();o.trail.forEach((s,i)=>{const X=colOf(s)*cw+cw/2,Y=rowOf(s)*ch+ch/2;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();}
+  if(o.agent!=null){const X=colOf(o.agent)*cw+cw/2,Y=rowOf(o.agent)*ch+ch/2;ctx.fillStyle=o.agentCol||'#6b55b5';ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(X,Y,sz*0.2,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X-sz*0.06,Y-sz*0.04,sz*0.035,0,7);ctx.arc(X+sz*0.06,Y-sz*0.04,sz*0.035,0,7);ctx.fill();}
+}
+
+/* ---------------- shared world sliders ---------------- */
+const WS=[
+  {k:'slip',label:'slip probability p',min:0,max:0.5,step:0.01,fmt:v=>v.toFixed(2)},
+  {k:'gamma',label:'discount γ',min:0.5,max:0.99,step:0.01,fmt:v=>v.toFixed(2)},
+  {k:'step',label:'cost per step',min:-1,max:0,step:0.05,fmt:v=>v.toFixed(2)},
+];
+document.querySelectorAll('.world-sliders').forEach(box=>{
+  WS.forEach(d=>{const el=document.createElement('div');el.className='sl';el.innerHTML=`<label>${d.label} <output data-o="${d.k}">${d.fmt(W[d.k])}</output></label><input type="range" data-k="${d.k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${W[d.k]}">`;box.appendChild(el);});
+});
+document.querySelectorAll('input[data-k]').forEach(inp=>inp.addEventListener('input',()=>{
+  const k=inp.dataset.k,v=parseFloat(inp.value);W[k]=v;const d=WS.find(x=>x.k===k);
+  document.querySelectorAll(`input[data-k="${k}"]`).forEach(o=>{if(o!==inp)o.value=v;});
+  document.querySelectorAll(`output[data-o="${k}"]`).forEach(o=>o.textContent=d.fmt(v));
+  onWorldChange(false);
+}));
+
+function onWorldChange(structural){
+  computeStar();
+  DP.onWorld(structural);
+  RL.onWorld();
+  INTRO.reset();
+}
+
+/* ---------------- Part 1: DP demo ---------------- */
+const DP={V:new Float64Array(N),k:0,delta:null,solvedOnce:false,timer:null,paths:null,
+  pi(){return this.k>0?greedy(this.V,W.slip,W.gamma):null;},
+  draw(){drawGrid(dpCanvas,{values:this.V,policy:this.pi(),showV:dpShowV.checked,showNum:true,paths:mcPaths.checked?this.paths:null,showA:dpShowA.checked&&!(mcPaths.checked&&this.paths)});
+    dpStatus.textContent=`sweep ${this.k}`+(this.delta!=null?` · max change Δ = ${this.delta<1e-6?'0 ✓ converged':this.delta.toFixed(3)}`:'');},
+  step(){const [Vn,d]=sweep(this.V,W.slip,W.gamma);this.V=Vn;this.delta=d;this.k++;this.draw();return d;},
+  stop(){if(this.timer){clearInterval(this.timer);this.timer=null;dpAnim.textContent='▶ Animate sweeps';}},
+  solve(){this.stop();const r=solve(W.slip,W.gamma);this.V=r.V;this.k=r.k;this.delta=0;this.solvedOnce=true;this.draw();},
+  reset(){this.stop();this.V=new Float64Array(N);this.k=0;this.delta=null;this.solvedOnce=false;this.paths=null;this.draw();},
+  onWorld(structural){this.paths=null;if(this.solvedOnce)this.solve();else{if(structural){this.stop();this.V=new Float64Array(N);this.k=0;this.delta=null;}this.draw();}clearMC();}
+};
+const $=id=>document.getElementById(id);
+const dpCanvas=$('dpCanvas'),dpStatus=$('dpStatus'),dpShowV=$('dpShowV'),dpShowA=$('dpShowA'),dpAnim=$('dpAnim'),mcPaths=$('mcPaths');
+$('dpStep').onclick=()=>{DP.stop();DP.step();};
+dpAnim.onclick=()=>{if(DP.timer){DP.stop();return;}dpAnim.textContent='❚❚ Pause';DP.timer=setInterval(()=>{const d=DP.step();if(d<1e-6||DP.k>400){DP.stop();DP.solvedOnce=true;}},220);};
+$('dpSolve').onclick=()=>DP.solve();
+$('dpReset').onclick=()=>DP.reset();
+dpShowV.onchange=dpShowA.onchange=mcPaths.onchange=()=>DP.draw();
+$('worldReset').onclick=()=>{defaultWorld();onWorldChange(true);};
+dpCanvas.addEventListener('click',e=>{const r=dpCanvas.getBoundingClientRect();const c=Math.floor((e.clientX-r.left)/r.width*COLS),rr=Math.floor((e.clientY-r.top)/r.height*ROWS);if(c<0||c>=COLS||rr<0||rr>=ROWS)return;const s=idx(rr,c);if(s===START||s===GOAL)return;W.type[s]=W.type[s]===EMPTY?WALL:W.type[s]===WALL?PIT:EMPTY;onWorldChange(true);});
+
+/* Monte Carlo: open-loop plan vs closed-loop policy */
+function clearMC(){['barOpen','barClosed'].forEach(id=>$(id).innerHTML='<span class="seg-n" style="width:100%">not run yet</span>');$('retOpen').textContent=$('retClosed').textContent='';}
+function runMC(){
+  const n=1000,g=W.gamma;
+  const det=solve(0,g),piDet=greedy(det.V,0,g);const seq=[];let s=START;const seen=new Set();
+  while(!isTerm(s)&&seq.length<60&&!seen.has(s)){seen.add(s);const a=piDet[s];seq.push(a);s=moveTo(s,a);}
+  const run=(closed)=>{let goal=0,pit=0,sumG=0;const paths=[];for(let i=0;i<n;i++){let s=START,G=0,disc=1;const tr=[s];const T=closed?200:seq.length;for(let t=0;t<T;t++){const a=closed?STAR.pi[s]:seq[t];if(a<0)break;const s2=sample(s,a);G+=disc*reward(s2);disc*=g;s=s2;tr.push(s);if(isTerm(s))break;}if(W.type[s]===GOALT)goal++;else if(W.type[s]===PIT)pit++;sumG+=G;if(paths.length<8)paths.push(tr);}return {goal,pit,n,avg:sumG/n,paths};};
+  const O=run(false),C=run(true);
+  const bar=(R)=>{const g=R.goal/R.n*100,p=R.pit/R.n*100,q=100-g-p;const lab=v=>v>=9?v.toFixed(0)+'%':'';return `<span class="seg-g" style="width:${g}%">${lab(g)}</span><span class="seg-p" style="width:${p}%">${lab(p)}</span><span class="seg-n" style="width:${q}%">${lab(q)}</span>`;};
+  $('barOpen').innerHTML=bar(O);$('barClosed').innerHTML=bar(C);
+  $('retOpen').textContent=`avg return ${O.avg.toFixed(2)}`;$('retClosed').textContent=`avg return ${C.avg.toFixed(2)}`;
+  const jit=()=>[(Math.random()-.5)*0.22,(Math.random()-.5)*0.22];
+  DP.paths=[...O.paths.map(s=>({s,col:'rgba(214,110,40,.55)',j:jit()})),...C.paths.map(s=>({s,col:'rgba(107,85,181,.6)',j:jit()}))];
+  if(!DP.solvedOnce)DP.solve();else DP.draw();
+}
+$('mcRun').onclick=runMC;
+
+/* ---------------- Part 2: Q-learning ---------------- */
+const rlCanvas=$('rlCanvas'),chart=$('chart'),rlPlay=$('rlPlay'),rlShowV=$('rlShowV');
+const RL={Q:new Float64Array(N*4),NV:new Float64Array(N*4),ep:0,rets:[],evals:[],cur:null,playing:false,acc:0,last:0,cache:null,
+  reset(){this.Q=new Float64Array(N*4);this.NV=new Float64Array(N*4);this.ep=0;this.rets=[];this.evals=[];this.cur=null;this.cache=null;this.evaluate();this.draw();},
+  onWorld(){this.reset();},
+  act(s,eps){if(Math.random()<eps)return Math.floor(Math.random()*4);let b=-Infinity,c=[];for(let a=0;a<4;a++){const q=this.Q[s*4+a];if(q>b+1e-12){b=q;c=[a];}else if(Math.abs(q-b)<=1e-12)c.push(a);}return c[Math.floor(Math.random()*c.length)];},
+  stepOnce(){ // one transition; returns true if episode ended
+    if(!this.cur)this.cur={s:START,t:0,G:0,disc:1,trail:[START]};
+    const e=this.cur,alpha=+$('alpha').value,eps=+$('eps').value,g=W.gamma;
+    const a=this.act(e.s,eps),s2=sample(e.s,a),r=reward(s2);
+    let mx=0;if(!isTerm(s2)){mx=-Infinity;for(let b=0;b<4;b++)mx=Math.max(mx,this.Q[s2*4+b]);}
+    const i=e.s*4+a;this.NV[i]++;const al=$('rlDecay').checked?alpha*30/(30+this.NV[i]):alpha;this.Q[i]+=al*(r+g*mx-this.Q[i]);
+    e.G+=e.disc*r;e.disc*=g;e.s=s2;e.t++;e.trail.push(s2);if(e.trail.length>40)e.trail.shift();
+    if(isTerm(s2)||e.t>=200){this.rets.push(e.G);this.ep++;this.cur=null;if(this.ep%5===0)this.evaluate();return true;}
+    return false;
+  },
+  runEpisodes(k){for(let i=0;i<k;i++){while(!this.stepOnce());}this.evaluate();},
+  greedyPi(){const pi=new Int8Array(N).fill(-1);for(let s=0;s<N;s++){if(isTerm(s)||isWall(s))continue;let b=-Infinity,ba=0;for(let a=0;a<4;a++){const q=this.Q[s*4+a];if(q>b){b=q;ba=a;}}pi[s]=ba;}return pi;},
+  evaluate(){
+    const pi=this.greedyPi(),Vpi=evalPolicy(pi,W.slip,W.gamma);const mis=new Uint8Array(N);let ok=0,tot=0;
+    for(let s=0;s<N;s++){if(pi[s]<0)continue;tot++;let best=-Infinity;for(let a=0;a<4;a++)best=Math.max(best,qv(STAR.V,s,a,W.slip,W.gamma));if(qv(STAR.V,s,pi[s],W.slip,W.gamma)>=best-1e-6)ok++;else mis[s]=1;}
+    this.cache={pi,mis,agree:tot?ok/tot:0,vpi:Vpi[START]};
+    if(this.ep>0)this.evals.push([this.ep,Vpi[START]]);
+  },
+  values(){const v=new Float64Array(N);for(let s=0;s<N;s++){if(isTerm(s)||isWall(s))continue;let b=-Infinity;for(let a=0;a<4;a++)b=Math.max(b,this.Q[s*4+a]);v[s]=b;}return v;},
+  draw(){
+    const c=this.cache;drawGrid(rlCanvas,{values:this.values(),policy:this.ep>0?c.pi:null,mismatch:this.ep>0?c.mis:null,showV:rlShowV.checked,showNum:true,agent:this.cur?this.cur.s:(this.playing?START:null),agentCol:'#c26a2b',trail:this.cur?this.cur.trail:null});
+    $('sEp').textContent=this.ep.toLocaleString();$('sAgree').textContent=this.ep?Math.round(c.agree*100)+'%':'–';
+    $('sVpi').textContent=this.ep?c.vpi.toFixed(2):'–';$('sVstar').textContent=STAR.V[START].toFixed(2);
+    drawChart();
+  }
+};
+function drawChart(){
+  const f=fit(chart);if(!f)return;const {ctx,w,h}=f;ctx.clearRect(0,0,w,h);
+  const L=38,R=8,T=8,B=22,pw=w-L-R,ph=h-T-B;const rets=RL.rets,n=rets.length,vstar=STAR.V[START];
+  let lo=Math.min(-11,vstar-1),hi=Math.max(11,vstar+1);for(const r of rets){if(r<lo)lo=r;if(r>hi)hi=r;}lo=Math.max(lo,-30);
+  const X=e=>L+pw*e/Math.max(50,n),Y=v=>T+ph*(1-(Math.max(lo,Math.min(hi,v))-lo)/(hi-lo));
+  ctx.strokeStyle='#ece5ee';ctx.fillStyle='#9a90a6';ctx.font='10px "JetBrains Mono",monospace';ctx.textAlign='right';ctx.textBaseline='middle';
+  const stepY=(hi-lo)>30?10:5;for(let v=Math.ceil(lo/stepY)*stepY;v<=hi;v+=stepY){ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(w-R,Y(v));ctx.stroke();ctx.fillText(v,L-5,Y(v));}
+  ctx.textAlign='center';ctx.textBaseline='top';const mx=Math.max(50,n);const xs=mx>2000?1000:mx>500?250:mx>200?50:10;for(let e=0;e<=mx;e+=xs)ctx.fillText(e,X(e),h-B+5);
+  ctx.textAlign='left';ctx.fillText('episode',L+4,h-B+5);
+  if(n){const st=Math.max(1,Math.floor(n/1500));ctx.fillStyle='rgba(242,199,168,.75)';for(let i=0;i<n;i+=st){ctx.beginPath();ctx.arc(X(i+1),Y(rets[i]),1.7,0,7);ctx.fill();}
+    const win=25;ctx.strokeStyle='#c26a2b';ctx.lineWidth=2;ctx.beginPath();let s=0;for(let i=0;i<n;i++){s+=rets[i];if(i>=win)s-=rets[i-win];const m=s/Math.min(i+1,win);if(i%st)continue;i?ctx.lineTo(X(i+1),Y(m)):ctx.moveTo(X(i+1),Y(m));}ctx.stroke();}
+  if(RL.evals.length){ctx.strokeStyle='#6b55b5';ctx.lineWidth=2.4;ctx.beginPath();RL.evals.forEach(([e,v],i)=>i?ctx.lineTo(X(e),Y(v)):ctx.moveTo(X(e),Y(v)));ctx.stroke();}
+  ctx.setLineDash([6,4]);ctx.strokeStyle='#2f8f6b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(L,Y(vstar));ctx.lineTo(w-R,Y(vstar));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#2f8f6b';ctx.textAlign='right';ctx.textBaseline='bottom';ctx.font='600 10px Inter,sans-serif';ctx.fillText('V* = '+vstar.toFixed(2),w-R-2,Y(vstar)-2);
+}
+const SPEED=[0,600,380,240,150,90,50,25,10,3,0]; // ms per step; 10 => several steps per frame
+function speedLabel(v){return v>=10?'turbo':v>=8?'fast':v>=5?'medium':'slow';}
+$('speed').oninput=()=>$('oSpeed').textContent=speedLabel(+$('speed').value);
+$('alpha').oninput=()=>$('oAlpha').textContent=(+$('alpha').value).toFixed(2);
+$('eps').oninput=()=>$('oEps').textContent=(+$('eps').value).toFixed(2);
+function loop(ts){
+  if(!RL.playing)return;
+  const v=+$('speed').value;
+  if(v>=10){for(let i=0;i<60;i++)RL.stepOnce();RL.draw();}
+  else{const ms=SPEED[v];if(ts-RL.last>=ms){RL.last=ts;const k=ms<16?Math.ceil(16/Math.max(ms,1)):1;for(let i=0;i<k;i++)RL.stepOnce();RL.draw();}}
+  requestAnimationFrame(loop);
+}
+rlPlay.onclick=()=>{RL.playing=!RL.playing;rlPlay.textContent=RL.playing?'❚❚ Pause':'▶ Watch it learn';if(RL.playing){RL.last=0;requestAnimationFrame(loop);}else{RL.evaluate();RL.draw();}};
+$('rlFast').onclick=()=>{RL.runEpisodes(500);RL.draw();};
+$('rlReset').onclick=()=>{RL.playing=false;rlPlay.textContent='▶ Watch it learn';RL.reset();};
+rlShowV.onchange=()=>RL.draw();
+
+/* ---------------- Intro animation ---------------- */
+const introCanvas=$('introCanvas');
+const INTRO={s:START,trail:[START],last:0,pause:0,
+  reset(){this.s=START;this.trail=[START];},
+  tick(ts){
+    if(cur==='intro'&&ts-this.last>260){this.last=ts;
+      if(this.pause>0){this.pause--;if(!this.pause)this.reset();}
+      else{const a=STAR.pi[this.s];if(a>=0){this.s=sample(this.s,a);this.trail.push(this.s);}if(isTerm(this.s)||this.trail.length>80)this.pause=4;}
+      drawGrid(introCanvas,{values:STAR.V,showV:true,showNum:false,policy:STAR.pi,showA:true,agent:this.s,trail:this.trail});}
+    requestAnimationFrame(t=>this.tick(t));
+  }
+};
+
+/* ---------------- code panels ---------------- */
+const VI_CODE=`def value_iteration(P, R, gamma=0.95, tol=1e-6):
+    # P[s][a] = [(prob, s_next), ...]   <- the MODEL
+    # terminal states have no outgoing transitions
+    V = np.zeros(n_states)
+    while True:
+        Q = np.array([[sum(p * (R[s2] + gamma * V[s2])
+                           for p, s2 in P[s][a])
+                       for a in actions]
+                      for s in states])
+        V_new = Q.max(axis=1)        # Bellman optimality
+        if np.abs(V_new - V).max() < tol:
+            return V_new, Q.argmax(axis=1)  # V*, policy
+        V = V_new`;
+const QL_CODE=`def q_learning(env, episodes=2000, alpha=0.2,
+               gamma=0.95, eps=0.1):
+    Q = np.zeros((n_states, n_actions))
+    for _ in range(episodes):
+        s, done = env.reset(), False
+        while not done:
+            if rng.random() < eps:            # explore
+                a = rng.integers(n_actions)
+            else:                             # exploit
+                a = Q[s].argmax()
+            s2, r, done = env.step(a)  # ONE sample, no P
+            target = r + gamma * Q[s2].max() * (not done)
+            Q[s, a] += alpha * (target - Q[s, a])
+            s = s2
+    return Q, Q.argmax(axis=1)`;
+function hl(code,hiLines,cls){
+  const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return code.split('\n').map((line,i)=>{
+    let cm='';const k=line.indexOf('#');if(k>=0){cm=line.slice(k);line=line.slice(0,k);}
+    let h=esc(line).replace(/\b(def|return|for|in|while|True|False|if|else|not|and|or|lambda|import|from|as)\b/g,'<span class="kw">$1</span>')
+      .replace(/\b(\d+(?:\.\d+)?(?:e-?\d+)?)\b/g,'<span class="nu">$1</span>')
+      .replace(/\b(value_iteration|q_learning|sum|max|argmax|zeros|array|abs|range|integers|random|step|reset)\b(?=\()/g,'<span class="fn">$1</span>');
+    if(cm)h+='<span class="cm">'+esc(cm)+'</span>';
+    return `<span class="ln${hiLines.includes(i)?' '+cls:''}">${h||' '}</span>`;
+  }).join('');
+}
+$('codeVI').innerHTML=hl(VI_CODE,[5,6,9],'hl-m');
+$('codeQL').innerHTML=hl(QL_CODE,[10,11,12],'hl-s');
+
+const PY_CODE=`# Value iteration on the slippery cliff world (plain Python)
+ROWS, COLS = 5, 8
+SLIP, GAMMA, STEP = 0.2, 0.95, -0.2      # <- try SLIP = 0.0 or 0.3
+START, GOAL = (4, 0), (4, 7)
+CLIFF = {(4, c) for c in range(1, 7)}
+MOVES = {'↑': (-1, 0), '→': (0, 1), '↓': (1, 0), '←': (0, -1)}
+
+def move(s, d):
+    r, c = s[0] + d[0], s[1] + d[1]
+    return (r, c) if 0 <= r < ROWS and 0 <= c < COLS else s
+
+def outcomes(s, a):                    # the MODEL  P(s' | s, a)
+    dr, dc = MOVES[a]
+    yield 1 - SLIP, move(s, (dr, dc))  # intended move
+    yield SLIP / 2, move(s, (dc, dr))  # slide sideways
+    yield SLIP / 2, move(s, (-dc, -dr))
+
+def reward(s2):
+    return 10 if s2 == GOAL else -10 if s2 in CLIFF else STEP
+
+terminal = lambda s: s == GOAL or s in CLIFF
+states = [(r, c) for r in range(ROWS) for c in range(COLS)]
+V = {s: 0.0 for s in states}
+
+def q(s, a):
+    return sum(p * (reward(s2) + GAMMA * (0 if terminal(s2) else V[s2]))
+               for p, s2 in outcomes(s, a))
+
+for sweep in range(1, 1001):           # value iteration
+    delta = 0.0
+    for s in states:
+        if terminal(s): continue
+        best = max(q(s, a) for a in MOVES)
+        delta = max(delta, abs(best - V[s]))
+        V[s] = best
+    if delta < 1e-6: break
+
+print(f"Converged in {sweep} sweeps.  V*(start) = {V[START]:.2f}\\n")
+for r in range(ROWS):
+    row = ""
+    for c in range(COLS):
+        s = (r, c)
+        if s == GOAL: row += " ★ "
+        elif s in CLIFF: row += " X "
+        else: row += f" {max(MOVES, key=lambda a: q(s, a))} "
+    print(row)
+`;
+const pyCode=$('pyCode');pyCode.value=PY_CODE;
+pyCode.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=pyCode.selectionStart;pyCode.setRangeText('    ',s,pyCode.selectionEnd,'end');}});
+let pyodide=null,pyLoading=null;
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('script blocked'));document.head.appendChild(s);});}
+$('pyRun').onclick=async()=>{
+  const out=$('pyOut'),st=$('pyState'),btn=$('pyRun');btn.disabled=true;
+  try{
+    if(!pyodide){st.textContent='Loading Python…';out.textContent='Loading the Python runtime (first time only)…';
+      const base='https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+      pyLoading=pyLoading||loadScript(base+'pyodide.js').then(()=>loadPyodide({indexURL:base}));pyodide=await pyLoading;}
+    st.textContent='Running…';let buf='';
+    pyodide.setStdout({batched:s=>{buf+=s+'\n';}});pyodide.setStderr({batched:s=>{buf+=s+'\n';}});
+    const t0=performance.now();
+    try{await pyodide.runPythonAsync(pyCode.value);}catch(err){buf+='\n'+String(err.message||err).split('\n').slice(-4).join('\n');}
+    out.textContent=buf||'(no output)';st.textContent=`Ran in ${((performance.now()-t0)/1000).toFixed(2)} s`;
+  }catch(err){pyLoading=null;out.textContent='Python could not load in this viewer (it needs to download the Pyodide runtime).\n\nUse the companion notebook instead: it contains this same code.';st.textContent='unavailable';}
+  btn.disabled=false;
+};
+
+/* ---------------- navigation ---------------- */
+const VIEWS=['intro','control','rl','code','wrap'];let cur='intro';
+function show(v,push){if(!VIEWS.includes(v))v='intro';cur=v;
+  VIEWS.forEach(x=>$('v-'+x).classList.toggle('on',x===v));
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  $('pg').textContent=(VIEWS.indexOf(v)+1)+' / '+VIEWS.length;
+  if(push&&location.hash!=='#'+v){try{history.replaceState(null,'','#'+v);}catch(e){location.hash=v;}}
+  window.scrollTo(0,0);
+  requestAnimationFrame(()=>{if(v==='control')DP.draw();if(v==='rl')RL.draw();});
+}
+const go=d=>show(VIEWS[Math.max(0,Math.min(VIEWS.length-1,VIEWS.indexOf(cur)+d))],true);
+$('prev').onclick=()=>go(-1);$('next').onclick=()=>go(1);
+document.querySelectorAll('#nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.v,true);}));
+document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.go,true)));
+window.addEventListener('hashchange',()=>show(location.hash.slice(1),false));
+const toggleNotes=()=>{document.body.classList.toggle('notes-on');$('notesBtn').classList.toggle('on');};
+const fs=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{});}catch(e){}};
+$('notesBtn').onclick=toggleNotes;$('fsBtn').onclick=fs;
+document.addEventListener('keydown',e=>{const t=e.target.tagName;if(t==='TEXTAREA'||(t==='INPUT'&&e.target.type!=='checkbox'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(1);else if(e.key==='ArrowLeft'||e.key==='PageUp')go(-1);
+  else if(e.key==='n'||e.key==='N')toggleNotes();else if(e.key==='f'||e.key==='F')fs();});
+let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(cur==='control')DP.draw();if(cur==='rl')RL.draw();},80);});
+
+RL.reset();
+show(location.hash.slice(1)||'intro',false);
+requestAnimationFrame(t=>INTRO.tick(t));
+window.__dbg={W,STAR,DP,RL,solve,greedy};
+})();
+</script>
+</body>
+</html>

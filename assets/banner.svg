@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbf8f4"/><stop offset="1" stop-color="#f3eefb"/>
+    </linearGradient>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="8" height="8" fill="#f7c6d6"/><line x1="0" y1="0" x2="0" y2="8" stroke="#e79ab6" stroke-width="3"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="300" rx="22" fill="url(#bg)"/>
+  <circle cx="1120" cy="40" r="110" fill="#d4f1e4" opacity=".6"/>
+  <circle cx="60" cy="280" r="90" fill="#fde6d4" opacity=".7"/>
+  <text x="60" y="78" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="3" fill="#6b55b5">AN INTERACTIVE INTRODUCTION</text>
+  <text x="60" y="140" font-family="Georgia,'Times New Roman',serif" font-size="50" font-weight="700" fill="#2b2633">Decisions Under Uncertainty</text>
+  <text x="60" y="186" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="21" fill="#4a4354">Stochastic optimal control · Reinforcement learning · Python</text>
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600">
+    <rect x="60" y="214" width="150" height="34" rx="17" fill="#e8e0f8"/><text x="135" y="236" text-anchor="middle" fill="#6b55b5">Bellman equation</text>
+    <rect x="222" y="214" width="130" height="34" rx="17" fill="#fde6d4"/><text x="287" y="236" text-anchor="middle" fill="#c26a2b">Q-learning</text>
+    <rect x="364" y="214" width="170" height="34" rx="17" fill="#d4f1e4"/><text x="449" y="236" text-anchor="middle" fill="#2f8f6b">Dynamic programming</text>
+  </g>
+  <!-- mini grid world -->
+  <g transform="translate(770,62)">
+    <g fill="#d9f2e6" stroke="#ffffff" stroke-width="3">
+      <rect x="0" y="0" width="48" height="48"/><rect x="48" y="0" width="48" height="48"/><rect x="96" y="0" width="48" height="48" fill="#c6ecda"/><rect x="144" y="0" width="48" height="48" fill="#b4e5ce"/><rect x="192" y="0" width="48" height="48" fill="#a8e0c5"/><rect x="240" y="0" width="48" height="48" fill="#97d9b9"/>
+      <rect x="0" y="48" width="48" height="48"/><rect x="48" y="48" width="48" height="48" fill="#cdeedd"/><rect x="96" y="48" width="48" height="48" fill="#c0e9d5"/><rect x="144" y="48" width="48" height="48" fill="#b0e3ca"/><rect x="192" y="48" width="48" height="48" fill="#9fdcbe"/><rect x="240" y="48" width="48" height="48" fill="#86d2ad"/>
+      <rect x="0" y="96" width="48" height="48" fill="#e6f6ee"/><rect x="48" y="96" width="48" height="48" fill="#d9f2e6"/><rect x="96" y="96" width="48" height="48" fill="#c6ecda"/><rect x="144" y="96" width="48" height="48" fill="#b4e5ce"/><rect x="192" y="96" width="48" height="48" fill="#9fdcbe"/><rect x="240" y="96" width="48" height="48" fill="#76cba1"/>
+      <rect x="0" y="144" width="48" height="48" fill="#eef8f3"/>
+      <rect x="48" y="144" width="192" height="48" fill="url(#hatch)"/>
+      <rect x="240" y="144" width="48" height="48" fill="#a8e6c9"/>
+    </g>
+    <text x="264" y="177" text-anchor="middle" font-size="24" fill="#1f6e50">★</text>
+    <text x="144" y="174" text-anchor="middle" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#a8325f">CLIFF −10</text>
+    <polyline points="24,168 24,72 264,72 264,160" fill="none" stroke="#6b55b5" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="2 9"/>
+    <circle cx="24" cy="168" r="13" fill="#6b55b5" stroke="#fff" stroke-width="3"/>
+    <circle cx="19" cy="165" r="2.2" fill="#fff"/><circle cx="29" cy="165" r="2.2" fill="#fff"/>
+  </g>
+</svg>
