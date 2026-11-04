@@ -91,6 +91,7 @@ Q[s, a] += alpha * (r + gamma * Q[s2].max() - Q[s, a])
 - Bertsekas, D. (2019). *Reinforcement Learning and Optimal Control.* Athena Scientific.
 - Watkins, C. & Dayan, P. (1992). Q-learning. *Machine Learning*, 8, 279–292.
 - Powell, W. (2022). *Reinforcement Learning and Stochastic Optimization.* Wiley.
+- Emergent Mind. [Stochastic optimal control problem](https://www.emergentmind.com/topics/stochastic-optimal-control-problem) (topic overview).
 
 ---
 

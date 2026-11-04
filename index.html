@@ -52,6 +52,11 @@ h3{font-family:var(--serif);font-size:18px;margin:0 0 .35em}
 .small{font-size:13px} .tiny{font-size:12px;color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .tag{font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+details.formal{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue-d);border-radius:14px;padding:10px 16px;margin-bottom:12px}
+details.formal summary{cursor:pointer;font:700 15px var(--serif);list-style:none}
+details.formal summary::before{content:"▸ ";color:var(--blue-d)}
+details.formal[open] summary::before{content:"▾ "}
+details.formal .eq{font-size:17px;margin:6px 0}
 /* demo panel */
 .demo{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(60,40,90,.06)}
 .demo-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
@@ -207,13 +212,21 @@ svg text{font-family:var(--sans)}
         <div class="eq"><i>V</i>*(<i>s</i>) = max<sub><i>a</i></sub> <span class="model">Σ<sub><i>s′</i></sub> <i>P</i>(<i>s′</i> | <i>s</i>, <i>a</i>)</span> [ <i>r</i> + γ <i>V</i>*(<i>s′</i>) ]</div>
         <p class="small" style="margin:0">The <span class="eq-inline" style="background:var(--lav);padding:0 4px;border-radius:4px;color:var(--lav-d)">lavender part is the model</span>: the known probabilities. <b>Dynamic programming</b> solves it by applying this update to every state until the values stop changing (<i>value iteration</i>).</p>
       </div>
+      <details class="formal">
+        <summary>The formal definition (continuous time)</summary>
+        <p class="small" style="margin:6px 0 2px">The state follows a stochastic differential equation: <b>drift</b> <i>b</i> plus <b>random diffusion</b> σ <i>dW</i>.</p>
+        <div class="eq">d<i>X</i><sub>t</sub> = <i>b</i>(<i>t</i>, <i>X</i><sub>t</sub>, <i>u</i><sub>t</sub>) d<i>t</i> + σ(<i>t</i>, <i>X</i><sub>t</sub>, <i>u</i><sub>t</sub>) d<i>W</i><sub>t</sub></div>
+        <p class="small" style="margin:2px 0">Choose controls to minimize expected running cost plus terminal cost:</p>
+        <div class="eq"><i>J</i>(<i>u</i>) = E[ ∫<sub>0</sub><sup>T</sup> <i>f</i>(<i>t</i>, <i>X</i><sub>t</sub>, <i>u</i><sub>t</sub>) d<i>t</i> + <i>g</i>(<i>X</i><sub>T</sub>) ]</div>
+        <p class="small" style="margin:2px 0 0">Two classic routes: <b>dynamic programming → the Hamilton–Jacobi–Bellman PDE</b> (our grid is its discrete version), or the <b>stochastic maximum principle</b> (a Hamiltonian plus a backward "adjoint" equation, like shadow prices). Modern variants add robustness to model uncertainty, risk constraints and delays, and are increasingly solved with deep learning.</p>
+      </details>
       <div class="small muted" style="margin-top:4px">Beyond the grid:</div>
       <div class="tags">
         <span class="tag">LQG control: Kalman filter + LQR (the Kalman filter flew on Apollo)</span>
         <span class="tag">Merton (1969): investing & consuming under random returns</span>
         <span class="tag">Inventory: order-up-to policies under random demand</span>
         <span class="tag">Revenue management & dynamic pricing</span>
-        <span class="tag">Continuous time: Hamilton–Jacobi–Bellman PDE</span>
+        <span class="tag">Finance: option pricing, mean–variance portfolios, optimal execution</span>
       </div>
     </div>
 
@@ -248,6 +261,7 @@ svg text{font-family:var(--sans)}
     <li>Demo 2: drag slip from 0 to about 0.3. At 0 the robot hugs the cliff (shortest path). As slip grows it pays a longer route to stay safe. <b>Risk changes the optimal decision</b>, which is the whole point of the "stochastic" part.</li>
     <li>Demo 3: Release 1,000 robots. The fixed plan falls off far more often. That's why the output is a <i>policy</i>.</li>
     <li>Fun "what if": at slip 0.3 the robot at START chooses ← (into the wall). Moving ↑ risks sliding right into the cliff; pushing against the wall is safe and lets it wait for a lucky slide upward. Optimal under risk, not intuitive.</li>
+    <li>If asked for the formal definition, click "The formal definition (continuous time)": SDE state equation, expected cost functional, then HJB vs. the stochastic maximum principle.</li>
     <li>Finance tie-in: Merton's portfolio problem is this same idea in continuous time.</li>
   </ul></aside>
 </section>
@@ -400,6 +414,7 @@ the optimal route moves away from the cliff (X).</pre>
         <li>Watkins, C. (1989). <i>Learning from Delayed Rewards.</i> PhD thesis, Cambridge.</li>
         <li>Merton, R. (1969). Lifetime portfolio selection under uncertainty. <i>Review of Economics and Statistics.</i></li>
         <li>Powell, W. (2022). <i>Reinforcement Learning and Stochastic Optimization.</i> Wiley.</li>
+        <li>Emergent Mind (n.d.). <a href="https://www.emergentmind.com/topics/stochastic-optimal-control-problem" style="color:inherit">Stochastic optimal control problem</a> (topic overview).</li>
         <li>Mnih, V. et al. (2015). Human-level control through deep RL. <i>Nature.</i></li>
       </ul>
     </div>
