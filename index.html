@@ -42,6 +42,7 @@ h3{font-family:var(--serif);font-size:18px;margin:0 0 .35em}
 .card.pink{border-left:4px solid var(--pink-d)} .card.peach{border-left:4px solid var(--peach-d)} .card.blue{border-left:4px solid var(--blue-d)}
 .chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
 .chip{border-radius:10px;padding:8px 10px;font-size:13.5px;line-height:1.35}
+.chip.nc b{text-transform:none;letter-spacing:0;font-size:14px}
 .chip b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
 .c-mint{background:var(--mint)} .c-lav{background:var(--lav)} .c-pink{background:var(--pink)} .c-peach{background:var(--peach)} .c-blue{background:var(--blue)}
 .eq{font-family:var(--serif);font-size:20px;text-align:center;padding:12px 8px;margin:8px 0;background:#fdfbff;border:1px dashed #d8cdef;border-radius:10px;overflow-x:auto;white-space:nowrap}
@@ -57,6 +58,8 @@ details.formal summary{cursor:pointer;font:700 15px var(--serif);list-style:none
 details.formal summary::before{content:"▸ ";color:var(--blue-d)}
 details.formal[open] summary::before{content:"▾ "}
 details.formal .eq{font-size:17px;margin:6px 0}
+#v-rl .demo{position:sticky;top:70px}
+@media (max-width:980px){#v-rl .demo{position:static}}
 /* demo panel */
 .demo{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(60,40,90,.06)}
 .demo-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
@@ -272,41 +275,90 @@ svg text{font-family:var(--sans)}
     <div>
       <div class="kicker">Part 2</div>
       <h2>Reinforcement learning</h2>
-      <p class="lede">Learning a good policy by <b>trial and error from rewards</b>, without being told the transition probabilities.</p>
-      <svg viewBox="0 0 460 150" width="100%" style="max-width:460px;display:block;margin:0 auto 6px" aria-label="Agent-environment loop">
-        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6475"/></marker></defs>
-        <rect x="20" y="45" width="130" height="60" rx="14" fill="#fde6d4" stroke="#c26a2b"/>
-        <text x="85" y="72" text-anchor="middle" font-weight="600" font-size="15">Agent</text>
-        <text x="85" y="91" text-anchor="middle" font-size="12" fill="#6b6475">policy π, values Q</text>
-        <rect x="310" y="45" width="130" height="60" rx="14" fill="#e8e0f8" stroke="#6b55b5"/>
-        <text x="375" y="72" text-anchor="middle" font-weight="600" font-size="15">Environment</text>
-        <text x="375" y="91" text-anchor="middle" font-size="12" fill="#6b6475">unknown P, rewards</text>
-        <path d="M150,58 C220,10 240,10 308,58" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
-        <text x="230" y="24" text-anchor="middle" font-size="13">action <tspan font-style="italic">a</tspan>ₜ</text>
-        <path d="M310,95 C240,140 220,140 152,95" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
-        <text x="230" y="143" text-anchor="middle" font-size="13">next state <tspan font-style="italic">s</tspan>ₜ₊₁ , reward <tspan font-style="italic">r</tspan>ₜ₊₁</text>
-      </svg>
+      <p class="lede">How RL makes the best decisions when the future is uncertain, and <b>how it relates to stochastic optimal control</b>.</p>
+
+      <div class="card mint">
+        <h3>Why do we need reinforcement learning?</h3>
+        <p class="small" style="margin:0 0 6px">Many real-world decisions are made <b>sequentially</b>:</p>
+        <div class="chips" style="margin:0 0 8px">
+          <div class="chip c-blue"><b>🚗 Self-driving car</b>Constantly decides how to steer and brake</div>
+          <div class="chip c-pink"><b>🩺 Doctor</b>Adjusts treatment based on the patient's response over time</div>
+        </div>
+        <div class="tags" style="margin-top:0"><span class="tag">Decisions affect future outcomes</span><span class="tag">Future outcomes are uncertain</span><span class="tag">We need a strategy that works over the long run</span></div>
+      </div>
+
       <div class="card peach">
-        <h3>Same Bellman equation, minus the model</h3>
-        <p class="small" style="margin:0 0 4px">Replace the <span style="background:var(--lav);padding:0 4px;border-radius:4px;color:var(--lav-d)">average over <i>P</i></span> with <span style="background:var(--peach);padding:0 4px;border-radius:4px;color:var(--peach-d)">one experienced transition</span> (<i>s, a, r, s′</i>) and nudge toward it. This is <b>Q-learning</b> (Watkins, 1989):</p>
-        <div class="eq" style="font-size:18px"><i>Q</i>(<i>s,a</i>) ← <i>Q</i>(<i>s,a</i>) + α [ <span class="td"><span class="sample"><i>r</i> + γ max<sub><i>a′</i></sub> <i>Q</i>(<i>s′,a′</i>)</span> − <i>Q</i>(<i>s,a</i>)</span> ]</div>
-        <p class="tiny" style="margin:0">The underlined term is the <b>temporal-difference error</b>: how surprised the agent was. It converges to the optimal <i>Q</i>* if every action keeps being tried and α shrinks over time (here α = α₀·30/(30 + visits), which you can switch off).</p>
+        <h3>What is reinforcement learning?</h3>
+        <p class="small" style="margin:0 0 4px">A machine learning framework in which an <b>agent</b> learns through interaction with an <b>environment</b>.</p>
+        <svg viewBox="0 0 460 150" width="100%" style="max-width:430px;display:block;margin:2px auto 4px" aria-label="Agent-environment loop">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6475"/></marker></defs>
+          <rect x="20" y="45" width="130" height="60" rx="14" fill="#fde6d4" stroke="#c26a2b"/>
+          <text x="85" y="72" text-anchor="middle" font-weight="600" font-size="15">Agent</text>
+          <text x="85" y="91" text-anchor="middle" font-size="12" fill="#6b6475">learns a strategy</text>
+          <rect x="310" y="45" width="130" height="60" rx="14" fill="#e8e0f8" stroke="#6b55b5"/>
+          <text x="375" y="72" text-anchor="middle" font-weight="600" font-size="15">Environment</text>
+          <text x="375" y="91" text-anchor="middle" font-size="12" fill="#6b6475">random, unknown</text>
+          <path d="M150,58 C220,10 240,10 308,58" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
+          <text x="230" y="24" text-anchor="middle" font-size="13">action <tspan font-style="italic">A</tspan>ₜ</text>
+          <path d="M310,95 C240,140 220,140 152,95" fill="none" stroke="#6b6475" stroke-width="1.6" marker-end="url(#ah)"/>
+          <text x="230" y="143" text-anchor="middle" font-size="13">new state <tspan font-style="italic">S</tspan>ₜ₊₁ , reward <tspan font-style="italic">R</tspan>ₜ₊₁</text>
+        </svg>
+        <p class="small" style="margin:0 0 6px">The agent <b>① observes</b> its current situation, <b>② takes an action</b>, <b>③ receives a reward</b>, and <b>④ learns</b> which actions lead to better outcomes. Over time, its strategy improves.</p>
+        <div class="eq" style="font-size:16px;white-space:normal">“Learning optimal decisions through <b>trial and error</b> to maximize <b>long-term rewards</b>.”</div>
       </div>
+
+      <div class="card blue">
+        <h3>RL as a statistical problem</h3>
+        <p class="small" style="margin:0 0 4px">RL is fundamentally about <b>uncertainty and expectations</b>. Future states, rewards and environmental conditions are all <b>random</b>. With state <i>S</i> and action <i>A</i>, we work with transition probabilities:</p>
+        <div class="eq"><i>P</i>(<i>S</i><sub>t+1</sub> | <i>S</i><sub>t</sub>, <i>A</i><sub>t</sub>)</div>
+        <p class="small" style="margin:0">The probability of moving to the next state, given the current state and action. <span class="muted">On our grid: 80% the intended square, 10% each side.</span></p>
+      </div>
+
+      <div class="card peach">
+        <h3>Objective: maximize expected future reward</h3>
+        <div class="eq">max E [ Σ<sub>t=0</sub><sup>∞</sup> γ<sup>t</sup> <i>R</i><sub>t</sub> ]</div>
+        <div class="chips" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:4px 0 6px">
+          <div class="chip nc c-peach"><b><i>R</i><sub>t</sub></b>Reward received at time <i>t</i></div>
+          <div class="chip nc c-lav"><b>γ</b>Discount factor (0 ≤ γ &lt; 1): later reward counts less</div>
+          <div class="chip nc c-blue"><b>E</b>Expectation, because the future is random</div>
+        </div>
+        <p class="small" style="margin:0">Not the biggest reward <i>today</i>, but the most total expected reward <b>over the whole future</b>. That long-term view is what makes RL powerful.</p>
+      </div>
+
+      <div class="card lav">
+        <h3>Markov decision processes (MDPs)</h3>
+        <p class="small" style="margin:0 0 4px">Most RL problems are modeled as MDPs. The key assumption is the <b>Markov property</b>: the future depends only on the <b>current</b> state (and action), not on the entire past.</p>
+        <div class="eq" style="font-size:17px"><i>P</i>(<i>S</i><sub>t+1</sub> | <i>S</i><sub>t</sub>, <i>A</i><sub>t</sub>, <i>S</i><sub>t−1</sub>, <i>A</i><sub>t−1</sub>, …) = <i>P</i>(<i>S</i><sub>t+1</sub> | <i>S</i><sub>t</sub>, <i>A</i><sub>t</sub>)</div>
+        <div class="tags"><span class="tag">States</span><span class="tag">Actions</span><span class="tag">Transition probabilities</span><span class="tag">Rewards</span></div>
+        <p class="tiny" style="margin:6px 0 0">These four ingredients are the mathematical framework for RL, and the same framework as stochastic control in Part 1.</p>
+      </div>
+
       <div class="card pink">
-        <h3>Explore vs. exploit</h3>
-        <p class="small" style="margin:0"><b>ε-greedy:</b> with probability ε try a random action; otherwise take the best one known so far. With no exploration, the agent never learns that a better route exists.</p>
+        <h3>Value function: how good is a state?</h3>
+        <div class="eq"><i>V</i>(<i>s</i>) = E[ future rewards | <i>S</i> = <i>s</i> ] = E[ Σ γ<sup>t</sup> <i>R</i><sub>t</sub> | <i>S</i><sub>0</sub> = <i>s</i> ]</div>
+        <p class="small" style="margin:0">The expected future reward when starting from state <i>s</i>. From a statistics view it's a <b>conditional expectation</b>, and much of RL is about <b>estimating it accurately</b>. <span class="muted">The numbers in each grid square are exactly these values.</span></p>
       </div>
+
+      <div class="card peach">
+        <h3>How the agent learns: Q-learning</h3>
+        <p class="small" style="margin:0 0 4px">Replace the <span style="background:var(--lav);padding:0 4px;border-radius:4px;color:var(--lav-d)">average over <i>P</i></span> with <span style="background:var(--peach);padding:0 4px;border-radius:4px;color:var(--peach-d)">one experienced transition</span> and nudge the estimate toward it (Watkins, 1989):</p>
+        <div class="eq" style="font-size:17px"><i>Q</i>(<i>s,a</i>) ← <i>Q</i>(<i>s,a</i>) + α [ <span class="td"><span class="sample"><i>r</i> + γ max<sub><i>a′</i></sub> <i>Q</i>(<i>s′,a′</i>)</span> − <i>Q</i>(<i>s,a</i>)</span> ]</div>
+        <p class="tiny" style="margin:0">The underlined term is the <b>surprise</b>: what happened minus what was expected. <b>Explore vs. exploit:</b> with probability ε the agent tries a random action; otherwise it takes the best one known so far.</p>
+      </div>
+
+      <h3 style="margin-top:14px">Reinforcement learning vs. stochastic optimal control</h3>
+      <p class="small muted" style="margin:0 0 6px">Both aim to make optimal decisions under uncertainty. The major difference is <b>how much information is available</b>.</p>
       <table class="cmp">
-        <tr><th></th><th>Stochastic control</th><th>Reinforcement learning</th></tr>
-        <tr><td>What you have</td><td>The model <i>P</i>, <i>r</i></td><td>Experience or a simulator</td></tr>
-        <tr><td>How you solve</td><td><b>Plan</b>: dynamic programming</td><td><b>Learn</b>: sample-based updates</td></tr>
-        <tr><td>Bottleneck</td><td>Computation (curse of dimensionality)</td><td>Data & exploration</td></tr>
-        <tr><td>Language</td><td>cost, <i>x</i>, <i>u</i>, minimize <i>J</i></td><td>reward, <i>s</i>, <i>a</i>, maximize <i>V</i></td></tr>
+        <tr><th></th><th>Stochastic optimal control</th><th>Reinforcement learning</th></tr>
+        <tr><td>Assumes</td><td>We know the system dynamics, the probability distributions and the mathematical model</td><td>The model is <b>unknown</b></td></tr>
+        <tr><td>How it decides</td><td>Optimization <b>computes</b> the best decisions</td><td>The agent <b>learns</b> from experience and observed data</td></tr>
+        <tr><td>Bottleneck</td><td>Computation</td><td>Data &amp; exploration</td></tr>
       </table>
-      <p class="tiny" style="margin-top:6px">Same problem, two research communities (Bertsekas). Scaled up with neural networks: DQN on Atari (2015), AlphaGo (2016), RLHF for chat assistants.</p>
+      <div class="card lav" style="margin-top:10px"><p style="margin:0;font-family:var(--serif);font-size:17px">RL can be viewed as a <b>data-driven approach to solving stochastic optimal control problems</b>.</p></div>
     </div>
 
-    <div class="demo">
+    
+<div class="demo">
       <div class="demo-title"><h3>Q-learning, live</h3><span class="badge c-peach">model unknown</span></div>
       <div class="sliders world-sliders"></div>
       <div class="sliders">
@@ -339,12 +391,11 @@ svg text{font-family:var(--sans)}
     </div>
   </div>
   <aside class="notes"><ul>
-    <li>Key sentence: "RL is stochastic control when you <i>don't</i> have the model. You only get to try things and see what happens."</li>
-    <li>Point to the equations: Q-learning is the Bellman equation with the lavender expectation replaced by one sample (the peach part).</li>
-    <li>Demo: press Watch it learn. Early on it wanders and falls off the cliff. Then press +500 episodes. The purple line (true value of what it learned) converges to the green dashed DP optimum.</li>
-    <li>Uncheck "decay α" and reset: with a constant step size the purple line keeps jumping between the safe and risky routes, because slips make every sample noisy. Shrinking α is what the convergence theorem requires.</li>
-    <li>Try ε = 0: learning stalls. That's the exploration problem. Behavior returns (dots) stay below the optimum because the agent keeps exploring, which is the price of learning.</li>
-    <li>Business tie-in: when you can simulate customers or demand but can't write down P, use RL. Powell calls this sequential decision analytics.</li>
+    <li>Open: "Today I'll discuss reinforcement learning and how it relates to stochastic optimal control. Both study how to make the best decisions when the future is uncertain."</li>
+    <li>Why RL: sequential decisions such as a self-driving car or a doctor adjusting treatment. Decisions affect the future, the future is uncertain, and we need a long-run strategy.</li>
+    <li>Walk down the cards: definition and loop, then P(S<sub>t+1</sub>|S<sub>t</sub>,A<sub>t</sub>), the objective, MDP and Markov property, and the value function as a conditional expectation.</li>
+    <li>Demo: Watch it learn, then +500 episodes. The purple line converges to the green dashed DP optimum.</li>
+    <li>Close: "RL is a data-driven approach to solving stochastic optimal control problems."</li>
   </ul></aside>
 </section>
 
