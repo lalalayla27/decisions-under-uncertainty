@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="Decisions Under Uncertainty: stochastic optimal control, reinforcement learning, and Python" width="100%">
-</p>
+<h1 align="center">Stochastic Optimal Control, Reinforcement Learning,<br>and Implementing Them on a Computer</h1>
 
 <p align="center">
   <a href="https://lalalayla27.github.io/decisions-under-uncertainty/"><img src="https://img.shields.io/badge/▶_Live_demo-open_in_browser-6b55b5?style=for-the-badge" alt="Live demo"></a>
